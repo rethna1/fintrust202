@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinTrust SIP vs RD vs FD Calculator</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  font-family: Arial;
+  background:#f4f6f9;
+  padding:15px;
+  margin:0;
+}
+
+h2{text-align:center;}
+
+.card{
+  background:#fff;
+  padding:15px;
+  border-radius:8px;
+  margin-bottom:15px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+label{
+  font-weight:bold;
+  display:block;
+  margin-top:10px;
+}
+
+input{
+  width:100%;
+  height:48px;
+  padding:10px;
+  margin-top:5px;
+  border-radius:8px;
+  border:2px solid #ccc;
+  font-size:16px;
+  box-sizing:border-box;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
+}
+
+.calc{background:#0a7cff;color:#fff;}
+.share{background:#25D366;color:#fff;}
+
+.result{
+  background:#eef5ff;
+  padding:15px;
+  border-radius:8px;
+  line-height:1.6;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📊 SIP vs RD vs FD Comparison</h2>
+
+<div class="card">
+
+<label>Monthly Investment (₹)</label>
+<input type="number" id="amt" value="10000">
+
+<label>Investment Years</label>
+<input type="number" id="years" value="10">
+
+<label>RD Interest (%)</label>
+<input type="number" id="rdRate" value="6">
+
+<label>FD Interest (%)</label>
+<input type="number" id="fdRate" value="7">
+
+<label>SIP Return (%)</label>
+<input type="number" id="sipRate" value="12">
+
+<button class="calc" onclick="calculate()">Compare</button>
+<button class="share" onclick="share()">Share WhatsApp</button>
+
+</div>
+
+<div class="result" id="result"></div>
+
+<canvas id="chart"></canvas>
+
+<script>
+
+let summaryText="";
+let chart;
+
+function format(n){
+  return "₹ " + Math.round(n).toLocaleString("en-IN");
+}
+
+function calculate(){
+
+let amt = +document.getElementById("amt").value;
+let years = +document.getElementById("years").value;
+
+let rdRate = +document.getElementById("rdRate").value/100/12;
+let fdRate = +document.getElementById("fdRate").value/100/12;
+let sipRate = +document.getElementById("sipRate").value/100/12;
+
+let months = years*12;
+
+/* RD */
+let rdValue = amt*((Math.pow(1+rdRate,months)-1)/rdRate)*(1+rdRate);
+
+/* FD */
+let fdValue = amt*((Math.pow(1+fdRate,months)-1)/fdRate)*(1+fdRate);
+
+/* SIP */
+let sipValue = amt*((Math.pow(1+sipRate,months)-1)/sipRate)*(1+sipRate);
+
+/* TOTAL INVESTED */
+let totalInvest = amt*12*years;
+
+/* RESULT */
+
+document.getElementById("result").innerHTML=
+
+"<b>💰 TOTAL INVESTED</b><br>"+format(totalInvest)+"<br><br>"+
+
+"<b>🏦 RD VALUE (Low Return)</b><br>"+format(rdValue)+"<br><br>"+
+
+"<b>🏦 FD VALUE (Moderate Return)</b><br>"+format(fdValue)+"<br><br>"+
+
+"<b>📈 SIP VALUE (High Return)</b><br>"+format(sipValue)+"<br><br>"+
+
+"<b>🔥 EXTRA WEALTH FROM SIP vs FD</b><br>"+format(sipValue - fdValue)+"<br><br>"+
+
+"<b>🔥 INSIGHT</b><br>"+
+"✔ RD gives safety but low growth<br>"+
+"✔ FD gives moderate returns<br>"+
+"<b>✔ SIP creates highest wealth over long term</b><br><br>"+
+
+"<b>💡 TAX INSIGHT SUMMARY</b><br>"+
+"✔ FD interest is taxed every year as per your income slab<br>"+
+"✔ This reduces your real return from FD<br>"+
+"✔ SIP (Equity Mutual Fund) is taxed only at withdrawal<br>"+
+"✔ Long Term Capital Gain (LTCG): ₹1.25 lakh is tax-free<br>"+
+"✔ Above ₹1.25 lakh taxed at only 12.5%<br>"+
+"<b>✔ SIP is more tax-efficient than FD</b>";
+
+/* CHART */
+
+if(chart) chart.destroy();
+
+chart = new Chart(document.getElementById("chart"),{
+type:"bar",
+data:{
+labels:["RD","FD","SIP"],
+datasets:[{
+data:[rdValue,fdValue,sipValue],
+borderWidth:2
+}]
+}
+});
+
+/* WHATSAPP */
+
+summaryText=
+"📊 SIP vs RD vs FD Report\n\n"+
+
+"Monthly Investment: Rs "+amt.toLocaleString("en-IN")+"\n"+
+"Period: "+years+" Years\n\n"+
+
+"Total Invested: Rs "+Math.round(totalInvest).toLocaleString("en-IN")+"\n\n"+
+
+"RD Value: Rs "+Math.round(rdValue).toLocaleString("en-IN")+"\n"+
+"FD Value: Rs "+Math.round(fdValue).toLocaleString("en-IN")+"\n"+
+"SIP Value: Rs "+Math.round(sipValue).toLocaleString("en-IN")+"\n\n"+
+
+"Extra Wealth from SIP: Rs "+Math.round(sipValue - fdValue).toLocaleString("en-IN")+"\n\n"+
+
+"💡 TAX INSIGHT:\n"+
+"FD interest is taxed every year as per your income slab\n"+
+"SIP taxed only at withdrawal\n"+
+"LTCG: Rs 1.25L tax-free, above taxed at 12.5%\n"+
+"SIP is more tax-efficient than FD\n\n"+
+
+"🔥 SIP creates highest wealth\n"+
+"📞 FinTrust\n8590858767";
+
+}
+
+function share(){
+if(!summaryText){
+alert("Calculate first");
+return;
+}
+window.open("https://wa.me/?text="+encodeURIComponent(summaryText),'_blank');
+}
+
+</script>
+
+<!-- BACK BUTTON - LEFT ARROW (Same style as scroll top) -->
+<style>
+#backBtn {
+  position: fixed;
+  left: 20px;
+  bottom: 25px;
+  width: 55px;
+  height: 55px;
+  background-color: #f2f2f2;  /* off-white */
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+#backBtn svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: #000000;      /* BLACK arrow */
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Hover effect */
+#backBtn:hover {
+  background-color: #e6e6e6;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+}
+</style>
+
+<a href=“https://rethna1.github.io/fintrust199/" id="backBtn" title="Back">
+  <svg viewBox="0 0 24 24">
+    <!-- LEFT POINTING ARROW (same style as scroll button) -->
+    <path d="M15 6l-6 6 6 6" />
+  </svg>
+</a>
+
+</body>
+</html>
